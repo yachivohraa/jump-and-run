@@ -1,4 +1,5 @@
 import pygame
+import sys
 import random
 import asyncio
 
@@ -15,7 +16,7 @@ velocity_y = 0
 gravity = 1
 
 # Enemy
-enemy = pygame.Rect(600, 300, 40, 40)
+enemy = pygame.Rect(800, 300, 40, 40)
 enemy_speed = 6
 
 # Score
@@ -40,6 +41,7 @@ async def main():
             if event.type == pygame.QUIT:
                 running = False
 
+            # Desktop: SPACE key
             if event.type == pygame.KEYDOWN:
 
                 if event.key == pygame.K_SPACE and player.bottom >= 340:
@@ -49,10 +51,23 @@ async def main():
                     player.y = 300
                     player.bottom = 340
                     velocity_y = 0
-
-                    enemy.x = 600
+                    enemy.x = 800
                     score = 0
                     game_over = False
+
+            # Mobile: Touch Screen
+            if event.type == pygame.MOUSEBUTTONDOWN:
+
+                if game_over:
+                    player.y = 300
+                    player.bottom = 340
+                    velocity_y = 0
+                    enemy.x = 800
+                    score = 0
+                    game_over = False
+
+                elif player.bottom >= 340:
+                    velocity_y = -15
 
         if not game_over:
 
@@ -68,14 +83,14 @@ async def main():
             enemy.x -= enemy_speed
 
             if enemy.right < 0:
-                enemy.x = random.randint(600, 800)
+                enemy.x = random.randint(700, 1000)
                 score += 1
 
             # Collision
             if player.colliderect(enemy):
                 game_over = True
 
-        # Draw background
+        # Draw
         screen.fill((0, 0, 0))
 
         # Ground
@@ -88,26 +103,22 @@ async def main():
         pygame.draw.rect(screen, (255, 0, 0), enemy)
 
         # Score
-        score_text = font.render(
-            f"Score: {score}",
-            True,
-            (255, 255, 255)
-        )
+        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_text, (10, 10))
 
         # Game Over
         if game_over:
             over_text = font.render(
-                "Game Over! Press R",
+                "Game Over! Touch Screen To Restart",
                 True,
                 (255, 0, 0)
             )
-            screen.blit(over_text, (160, 180))
+            screen.blit(over_text, (70, 180))
 
         pygame.display.flip()
         clock.tick(60)
 
     pygame.quit()
-
+    sys.exit()
 
 asyncio.run(main())
