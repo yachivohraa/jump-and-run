@@ -1,6 +1,6 @@
 import pygame
-import sys
 import random
+import asyncio
 
 pygame.init()
 
@@ -27,54 +27,87 @@ clock = pygame.time.Clock()
 running = True
 game_over = False
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and player.bottom >= 340:
-                velocity_y = -15
+async def main():
+    global velocity_y, score, game_over, running
 
-            if event.key == pygame.K_r and game_over:
-                player.y = 300
-                enemy.x = 600
-                score = 0
-                game_over = False
+    while running:
 
-    if not game_over:
-        # Gravity
-        velocity_y += gravity
-        player.y += velocity_y
+        await asyncio.sleep(0)
 
-        if player.bottom >= 340:
-            player.bottom = 340
-            velocity_y = 0
+        for event in pygame.event.get():
 
-        # Enemy movement
-        enemy.x -= enemy_speed
-        if enemy.right < 0:
-            enemy.x = random.randint(600, 800)
-            score += 1
+            if event.type == pygame.QUIT:
+                running = False
 
-        # Collision
-        if player.colliderect(enemy):
-            game_over = True
+            if event.type == pygame.KEYDOWN:
 
-    # Drawing
-    screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (0, 255, 0), player)
-    pygame.draw.rect(screen, (255, 0, 0), enemy)
+                if event.key == pygame.K_SPACE and player.bottom >= 340:
+                    velocity_y = -15
 
-    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-    screen.blit(score_text, (10, 10))
+                if event.key == pygame.K_r and game_over:
+                    player.y = 300
+                    player.bottom = 340
+                    velocity_y = 0
 
-    if game_over:
-        over_text = font.render("Game Over! Press R", True, (255, 0, 0))
-        screen.blit(over_text, (180, 180))
+                    enemy.x = 600
+                    score = 0
+                    game_over = False
 
-    pygame.display.update()
-    clock.tick(60)
+        if not game_over:
 
-pygame.quit()
-sys.exit()
+            # Gravity
+            velocity_y += gravity
+            player.y += velocity_y
+
+            if player.bottom >= 340:
+                player.bottom = 340
+                velocity_y = 0
+
+            # Enemy movement
+            enemy.x -= enemy_speed
+
+            if enemy.right < 0:
+                enemy.x = random.randint(600, 800)
+                score += 1
+
+            # Collision
+            if player.colliderect(enemy):
+                game_over = True
+
+        # Draw background
+        screen.fill((0, 0, 0))
+
+        # Ground
+        pygame.draw.line(screen, (255, 255, 255), (0, 340), (WIDTH, 340), 2)
+
+        # Player
+        pygame.draw.rect(screen, (0, 255, 0), player)
+
+        # Enemy
+        pygame.draw.rect(screen, (255, 0, 0), enemy)
+
+        # Score
+        score_text = font.render(
+            f"Score: {score}",
+            True,
+            (255, 255, 255)
+        )
+        screen.blit(score_text, (10, 10))
+
+        # Game Over
+        if game_over:
+            over_text = font.render(
+                "Game Over! Press R",
+                True,
+                (255, 0, 0)
+            )
+            screen.blit(over_text, (160, 180))
+
+        pygame.display.flip()
+        clock.tick(60)
+
+    pygame.quit()
+
+
+asyncio.run(main())
